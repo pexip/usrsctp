@@ -175,15 +175,21 @@ endif
 subdir('usrsctplib')
 
 # Build library
-lib_usrsctp = library('usrsctp', sources,
+usrsctp = library('usrsctp', sources,
     dependencies: dependencies,
     include_directories: include_dirs,
     install: true,
     version: meson.project_version())
 
+# Declare dependency
+usrsctp_dep = declare_dependency(
+    compile_args: compile_args,
+    include_directories: include_dirs,
+    link_with: usrsctp)
+
 # Generate pkg-config file
 pkg = import('pkgconfig')
-pkg.generate(lib_usrsctp,
+pkg.generate(usrsctp,
     name: 'usrsctp',
     description: 'A portable SCTP userland stack',
     url: 'https://github.com/sctplab/usrsctp',
@@ -202,7 +208,7 @@ if get_option('sctp_build_programs')
             name,
             sources,
             dependencies: thread_dep,
-            link_with: lib_usrsctp,
+            link_with: usrsctp,
             include_directories: include_dirs)
     endforeach
 endif
