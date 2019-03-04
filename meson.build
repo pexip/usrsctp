@@ -2,7 +2,7 @@
 project('usrsctplib', 'c',
     version: '1.0.0',
     default_options: ['c_std=c99'],
-    meson_version: '>=0.49.0')
+    meson_version: '>=0.48.0')
 
 # Set compiler warning flags
 compiler = meson.get_compiler('c')
