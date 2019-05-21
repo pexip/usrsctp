@@ -210,7 +210,10 @@ recv_function_route(void *arg)
 
 		len = recvmsg(SCTP_BASE_VAR(userspace_route), &msg, 0);
 
-		if (len < 0) {
+    if (len == 0)
+      break;
+
+    if (len < 0) {
 			if (errno == EAGAIN || errno == EINTR) {
 				continue;
 			} else {
@@ -340,6 +343,9 @@ recv_function_raw(void *arg)
 		msg.msg_control = NULL;
 		msg.msg_controllen = 0;
 		ncounter = n = recvmsg(SCTP_BASE_VAR(userspace_rawsctp), &msg, 0);
+    if (n == 0)
+      break;
+
 		if (n < 0) {
 			if (errno == EAGAIN || errno == EINTR) {
 				continue;
@@ -535,6 +541,9 @@ recv_function_raw6(void *arg)
 		msg.msg_flags = 0;
 
 		ncounter = n = recvmsg(SCTP_BASE_VAR(userspace_rawsctp6), &msg, 0);
+    if (n == 0)
+      break;
+
 		if (n < 0) {
 			if (errno == EAGAIN || errno == EINTR) {
 				continue;
@@ -702,13 +711,18 @@ recv_function_udp(void *arg)
 		msg.msg_flags = 0;
 
 		ncounter = n = recvmsg(SCTP_BASE_VAR(userspace_udpsctp), &msg, 0);
-		if (n < 0) {
+
+    if (n == 0)
+      break;
+
+    if (n < 0) {
 			if (errno == EAGAIN || errno == EINTR) {
 				continue;
 			} else {
 				break;
 			}
 		}
+
 #else
 		nResult = WSAIoctl(SCTP_BASE_VAR(userspace_udpsctp), SIO_GET_EXTENSION_FUNCTION_POINTER,
 		 &WSARecvMsg_GUID, sizeof WSARecvMsg_GUID,
@@ -904,6 +918,8 @@ recv_function_udp6(void *arg)
 		msg.msg_flags = 0;
 
 		ncounter = n = recvmsg(SCTP_BASE_VAR(userspace_udpsctp6), &msg, 0);
+    if (n == 0)
+      break;
 		if (n < 0) {
 			if (errno == EAGAIN || errno == EINTR) {
 				continue;
@@ -1452,6 +1468,19 @@ recv_thread_init(void)
 #endif
 }
 
+#if !defined(__Userspace_os_Windows)
+static void
+close_socket(int *sock)
+{
+  if (*sock != -1) {
+    int socktmp = *sock;
+    *sock = -1;
+    shutdown (socktmp, SHUT_RDWR);
+    close(socktmp);
+  }
+}
+#endif /* !defined(__Userspace_os_Windows) */
+
 void
 recv_thread_destroy(void)
 {
@@ -1467,14 +1496,14 @@ recv_thread_destroy(void)
 #if defined(__Userspace_os_Windows)
 		closesocket(SCTP_BASE_VAR(userspace_rawsctp));
 #else
-		close(SCTP_BASE_VAR(userspace_rawsctp));
+    close_socket(&SCTP_BASE_VAR(userspace_rawsctp));
 #endif
 	}
 	if (SCTP_BASE_VAR(userspace_udpsctp) != -1) {
 #if defined(__Userspace_os_Windows)
 		closesocket(SCTP_BASE_VAR(userspace_udpsctp));
 #else
-		close(SCTP_BASE_VAR(userspace_udpsctp));
+    close_socket(&SCTP_BASE_VAR(userspace_udpsctp));
 #endif
 	}
 #endif
@@ -1483,14 +1512,14 @@ recv_thread_destroy(void)
 #if defined(__Userspace_os_Windows)
 		closesocket(SCTP_BASE_VAR(userspace_rawsctp6));
 #else
-		close(SCTP_BASE_VAR(userspace_rawsctp6));
+    close_socket(&SCTP_BASE_VAR(userspace_rawsctp6));
 #endif
 	}
 	if (SCTP_BASE_VAR(userspace_udpsctp6) != -1) {
 #if defined(__Userspace_os_Windows)
 		closesocket(SCTP_BASE_VAR(userspace_udpsctp6));
 #else
-		close(SCTP_BASE_VAR(userspace_udpsctp6));
+    close_socket(&SCTP_BASE_VAR(userspace_udpsctp6));
 #endif
 	}
 #endif
