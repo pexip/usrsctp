@@ -6919,6 +6919,7 @@ sctp_pcb_finish(void)
 		CloseHandle(sctp_it_ctl.thread_proc);
 		sctp_it_ctl.thread_proc = NULL;
 #else
+		pthread_cancel(sctp_it_ctl.thread_proc);
 		pthread_join(sctp_it_ctl.thread_proc, NULL);
 		sctp_it_ctl.thread_proc = 0;
 #endif
