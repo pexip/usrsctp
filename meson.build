@@ -125,7 +125,7 @@ elif system == 'freebsd'
     ] + compiler.get_supported_arguments([
         '-Wno-address-of-packed-member',
     ]), language: 'c')
-elif system == 'darwin'
+elif system == 'darwin' or system == 'ios'
     add_project_arguments([
             '-D__Userspace_os_Darwin',
             '-U__APPLE__',
