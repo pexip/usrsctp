@@ -86,15 +86,23 @@ sctp_init(void)
 {
 #if !defined(__Panda__) && !defined(__Userspace__)
 	u_long sb_max_adj;
-
+#elif defined(__Userspace__)
+	struct timeval now;
+	unsigned int seed = 0;
 #endif
 	/* Initialize and modify the sysctled variables */
 	sctp_init_sysctls();
 #if defined(__Userspace__)
+	(void)SCTP_GETTIME_TIMEVAL(&now);
+	seed |= (unsigned int)now.tv_sec;
+	seed |= (unsigned int)now.tv_usec;
+#if !defined(__Userspace_os_Windows) && !defined(__Userspace_os_NaCl)
+	seed |= getpid();
+#endif
 #if defined(__Userspace_os_Windows) || defined(__Userspace_os_NaCl)
-	srand((unsigned int)time(NULL));
+	srand(seed);
 #else
-	srandom(getpid()); /* so inp->sctp_ep.random_numbers are truly random... */
+	srandom(seed); /* so inp->sctp_ep.random_numbers are truly random... */
 #endif
 #endif
 #if defined(__Panda__)
