@@ -113,7 +113,7 @@ endif
 
 # Features: OS-specific
 system = host_machine.system()
-if system == 'linux'
+if system == 'linux' or system == 'android'
     add_project_arguments([
         '-D__Userspace_os_Linux',
         '-D_GNU_SOURCE',
